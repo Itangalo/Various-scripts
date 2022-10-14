@@ -7,3 +7,5 @@ The script does some extra formatting stuff:
 * Line breaks (not paragraph breaks) are introduced after each sentence, including after each colon. This is to make it easier to use git version control on the resulting text.
 
 The script relies on [Pandoc](https://pandoc.org/) and requires that pandoc.exe is in the same folder as the script. It also requires that `list-formatting.lua` is in the same folder, to take care of compacting item lists.
+
+Windows only.
