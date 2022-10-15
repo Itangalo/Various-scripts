@@ -1,24 +1,48 @@
 @ECHO OFF
 @CHCP 65001
-TITLE Script for checking if any of some words are present in a text file.
+TITLE Script for checking if any of some words are present in a text.
 CLS
-ECHO Checking for words in text-document.txt...
+SET InputFromArgument=0
+IF EXIST "%1" (
+  SET InputFromArgument=1
+  SET ThisDir=%~dp0
+  CD %ThisDir%
+  ECHO Checking for unwanted words in text file: %1
+) ELSE (ECHO Checking for unwanted words in copied text.)
+ECHO.
 
-SET File=text-document.txt
-
-REM Running commands through PowerShell, to take care of UTF-8 format
+REM Running through PowerShell to be able to manage UTF-8 format
 powershell.exe -command ^
-  $words="""word1""","""word2""","""word3""", """word4""", """word5""", """words with spaces""", """...""";^
-  $output=,""" """;^
+  if (%InputFromArgument%) {^
+    $textToCheck = Get-Content -encoding UTF8 """%1""";^
+  }^
+  else {^
+    $textToCheck = Get-Clipboard;^
+  }^
+  $words = Get-Content forbidden-words.txt -encoding UTF8;^
+  $allClean = 1;^
   foreach ($word in $words) {^
-    $result = Select-String """%File%""" -Pattern \b$word\b ^;^
-    if ($result) {^
-      $output += """ """;^
-      $output += """'""" + $word + """' was found in line """ + $result.LineNumber + """: """ + $result.Line;^
+    $lineNumber = 0;^
+    $clean = 1;^
+    foreach($line in $textToCheck) {^
+      $lineNumber += 1;^
+      $result = Select-String -inputObject $line -Pattern \b$word\b ^;^
+      if ($result) {^
+        if ($clean) {^
+          """`nFound '""" + $word + """' as below.""";^
+        }^
+        """* Line """ + $lineNumber + """: """ + $result.Line;^
+        $clean=0;^
+        $allClean=0;^
+      }^
     }^
   }^
-  $output;
+  if ($allClean) {^
+    """None of the unwanted words were found.""";^
+  }
 
-REM Pausing the script to prevent the terminal window from closing
-ECHO ·
+REM Pause the script, so the terminal window remains open.
+ECHO.
+ECHO Finished check.
+ECHO.
 PAUSE
