@@ -1,17 +1,17 @@
-@ECHO OFF
-@CHCP 65001
-TITLE Script for checking if any of some words are present in a text.
+@ECHO off
+CHCP 65001
+TITLE Skript för att kolla efter valda ord i en text
 CLS
 SET InputFromArgument=0
+SET ThisDir=%~dp0
+CD %ThisDir%
 IF EXIST "%1" (
   SET InputFromArgument=1
-  SET ThisDir=%~dp0
-  CD %ThisDir%
-  ECHO Checking for unwanted words in text file: %1
-) ELSE (ECHO Checking for unwanted words in copied text.)
+  ECHO Kollar efter oönskade ord i angiven fil: %1
+) ELSE (ECHO Kollar efter oönskade ord i kopierad text.)
 ECHO.
 
-REM Running through PowerShell to be able to manage UTF-8 format
+REM Kör kommandon genom PowerShell, för att kunna ta hand om UTF-8-format
 powershell.exe -command ^
   if (%InputFromArgument%) {^
     $textToCheck = Get-Content -encoding UTF8 """%1""";^
@@ -19,7 +19,7 @@ powershell.exe -command ^
   else {^
     $textToCheck = Get-Clipboard;^
   }^
-  $words = Get-Content forbidden-words.txt -encoding UTF8;^
+  $words = Get-Content """%ThisDir%forbidden-words.txt""" -encoding UTF8;^
   $allClean = 1;^
   foreach ($word in $words) {^
     $lineNumber = 0;^
@@ -29,20 +29,20 @@ powershell.exe -command ^
       $result = Select-String -inputObject $line -Pattern \b$word\b ^;^
       if ($result) {^
         if ($clean) {^
-          """`nFound '""" + $word + """' as below.""";^
+          """`nHittade '""" + $word + """' enligt nedan.""";^
         }^
-        """* Line """ + $lineNumber + """: """ + $result.Line;^
+        """* Rad """ + $lineNumber + """: """ + $result.Line;^
         $clean=0;^
         $allClean=0;^
       }^
     }^
   }^
   if ($allClean) {^
-    """None of the unwanted words were found.""";^
+    """Inga av orden påträffades.""";^
   }
 
-REM Pause the script, so the terminal window remains open.
+REM Pausa skriptet, så att inte terminalfönstret bara stängs
 ECHO.
-ECHO Finished check.
+ECHO Kontrollen är klar.
 ECHO.
 PAUSE
